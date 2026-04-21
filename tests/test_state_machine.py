@@ -90,4 +90,4 @@ def test_state_weight_tables_complete() -> None:
     for profile, table in _STATE_WEIGHT_BY_PROFILE.items():
         for family in ("FORMING", "CONFIRMED", "RETESTED"):
             assert family in table, f"profile {profile} missing {family}"
-            assert 0.0 <= table[family] <= 1.0, f"weight out of range"
+            assert 0.0 <= table[family] <= 1.0, "weight out of range"

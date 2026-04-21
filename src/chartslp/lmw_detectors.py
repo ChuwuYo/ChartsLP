@@ -31,7 +31,6 @@ from __future__ import annotations
 
 from statistics import mean
 
-
 # ---------------------------------------------------------------------------
 # Small helpers (self-contained, no patterns imports)
 # ---------------------------------------------------------------------------
@@ -106,8 +105,10 @@ def _hs_core(
     *, expected_kinds, is_top, pattern_type, sym_tol_pct, neck_tol_pct,
 ):
     from chartslp.patterns import (
-        PATTERN_LABELS, _pattern_confidence, _build_horizontal_level,
+        PATTERN_LABELS,
+        _build_horizontal_level,
         _build_marker,
+        _pattern_confidence,
     )
     from chartslp.precision import smart_round_price
 
@@ -269,8 +270,10 @@ def _triangle_core(
     Needs at least 2 highs + 2 lows within the last 4-8 pivots.
     """
     from chartslp.patterns import (
-        PATTERN_LABELS, _pattern_confidence, _build_horizontal_level,
+        PATTERN_LABELS,
         _avg_bar_length,
+        _build_horizontal_level,
+        _pattern_confidence,
     )
     from chartslp.precision import smart_round_price
     from chartslp.trendlines import build_trend_line
@@ -434,7 +437,9 @@ def _wedge_core(
       (top falls faster). Converging downward.
     """
     from chartslp.patterns import (
-        PATTERN_LABELS, _pattern_confidence, _avg_bar_length,
+        PATTERN_LABELS,
+        _avg_bar_length,
+        _pattern_confidence,
     )
     from chartslp.precision import smart_round_price
     from chartslp.trendlines import build_trend_line
@@ -582,7 +587,7 @@ def _flag_core(
         (opposite sign) AND weaker than ~40% of the pole slope.
       - Price must still be near the flag (bounded within flag range ± breakout_buffer).
     """
-    from chartslp.patterns import PATTERN_LABELS, _pattern_confidence, _avg_bar_length
+    from chartslp.patterns import PATTERN_LABELS, _avg_bar_length, _pattern_confidence
     from chartslp.precision import smart_round_price
 
     if len(candles) < 25:

@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from typing import Literal
 
-
 AssetClass = Literal["crypto", "stock", "forex", "etf", "commodity"]
 
 

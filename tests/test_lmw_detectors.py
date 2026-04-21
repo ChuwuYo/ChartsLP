@@ -22,7 +22,6 @@ from chartslp.lmw_detectors import (
     detect_symmetrical_triangle_lmw,
 )
 
-
 BASE_TIME = 1_700_000_000
 
 

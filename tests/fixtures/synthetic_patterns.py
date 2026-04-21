@@ -17,7 +17,6 @@ from typing import Callable
 
 import numpy as np
 
-
 BAR_SECONDS = 3600  # 1h bars
 BASE_TIME = 1_700_000_000
 

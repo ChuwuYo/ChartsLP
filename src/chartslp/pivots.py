@@ -46,7 +46,6 @@ from typing import Literal
 
 import numpy as np
 
-
 # ---------------------------------------------------------------------------
 # PIP budget per TF.  Short TFs get fewer pips (noise-dense, fewer meaningful
 # turning points); sparse daily/weekly get more.  Values chosen to mirror the

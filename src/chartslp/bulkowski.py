@@ -14,7 +14,6 @@ omitted; callers handle ``None`` gracefully.
 """
 from __future__ import annotations
 
-
 _BULKOWSKI_STATS: dict[str, dict] = {
     # Format per entry:
     #   failure_rate: fraction of occurrences where expected move did not reach target
