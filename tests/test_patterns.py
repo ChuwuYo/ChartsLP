@@ -57,7 +57,7 @@ def _patch_pattern_engine(
     monkeypatch.setattr(pattern_engine, "_compute_clustered_levels", lambda *args, **kwargs: ([], []))
     monkeypatch.setattr(pattern_engine, "_dedupe_detector_candidates", lambda detector_candidates, latest_index: detector_candidates)
     monkeypatch.setattr(pattern_engine, "_build_shapes_from_pattern_result", lambda *args, **kwargs: [])
-    monkeypatch.setattr(pattern_engine, "_apply_trendspider_pattern_theme", lambda pattern_type, bias, result: result)
+    monkeypatch.setattr(pattern_engine, "_apply_pattern_theme", lambda pattern_type, bias, result: result)
     monkeypatch.setattr(pattern_engine, "_pattern_selection_score", lambda result, latest_index: float(result.get("_test_score", 0.0)))
     monkeypatch.setattr(pattern_engine, "_build_auto_trendlines", lambda *args, **kwargs: list(auto_trends or []))
 

@@ -231,7 +231,7 @@ def build_trend_line(
     candles: list[dict],
     partner_line: dict | None = None,
 ) -> dict | None:
-    """Build a boundary trendline following TradingView/TrendSpider best practices.
+    """Build a boundary trendline following common technical-analysis best practices.
 
     Improvements over naive projection:
     1. Extension capped at 1.5× pattern span (prevents runaway lines)
@@ -291,7 +291,7 @@ def build_trend_line(
         point_a = anchor_a
         point_b = {**point_b, "price": adjusted_price_b}
 
-    # --- IMPROVEMENT 2: Extension cap based on pattern span (TrendSpider style) ---
+    # --- IMPROVEMENT 2: Extension cap based on pattern span ---
     max_extension = int(pattern_span * 1.5)
     max_extend_idx = min(point_b["index"] + max_extension, last_idx)
 

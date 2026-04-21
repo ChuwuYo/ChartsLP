@@ -53,13 +53,13 @@ PATTERN_LABELS = {
     "no_clear_pattern": "No Clear Pattern",
 }
 
-TRENDSPIDER_PATTERN_COLORS_DARK = {
+PATTERN_COLORS_DARK = {
     "bearish": "#FFA813",
     "bullish": "#5DCC61",
     "neutral": "#56AEE0",
 }
 
-TRENDSPIDER_PATTERN_CLASS = {
+PATTERN_CLASS_MAP = {
     "ascending_triangle": "bearish",
     "descending_triangle": "bullish",
     "symmetrical_triangle": "neutral",
@@ -1071,17 +1071,17 @@ def _pattern_confidence(base_score, *components):
     return round(max(0.30, min(score, 0.92)), 2)
 
 
-def _trendspider_pattern_color(pattern_type, bias="neutral"):
-    pattern_class = TRENDSPIDER_PATTERN_CLASS.get(pattern_type)
+def _pattern_color(pattern_type, bias="neutral"):
+    pattern_class = PATTERN_CLASS_MAP.get(pattern_type)
     if not pattern_class:
         pattern_class = {
             "bullish": "bullish",
             "bearish": "bearish",
         }.get(str(bias).lower(), "neutral")
-    return TRENDSPIDER_PATTERN_COLORS_DARK[pattern_class]
+    return PATTERN_COLORS_DARK[pattern_class]
 
 
-def _apply_trendspider_pattern_theme(pattern_type, bias, pattern_result):
+def _apply_pattern_theme(pattern_type, bias, pattern_result):
     """Apply pattern theme color to pattern shapes and their boundary lines only.
 
     Scope:
@@ -1096,7 +1096,7 @@ def _apply_trendspider_pattern_theme(pattern_type, bias, pattern_result):
     if not pattern_result:
         return pattern_result
 
-    themed_color = _trendspider_pattern_color(pattern_type, bias)
+    themed_color = _pattern_color(pattern_type, bias)
 
     for line in pattern_result.get("trendLines", []) or []:
         if line.get("source") == "pattern":
@@ -1111,7 +1111,7 @@ def _apply_trendspider_pattern_theme(pattern_type, bias, pattern_result):
     for cand in pattern_result.get("allCandidates", []) or []:
         cand_type = cand.get("type", pattern_type)
         cand_bias = cand.get("bias", bias)
-        cand_color = _trendspider_pattern_color(cand_type, cand_bias)
+        cand_color = _pattern_color(cand_type, cand_bias)
         for line in cand.get("trendLines", []) or []:
             # Candidate detector output = pattern boundary lines (never auto).
             # Skip only if explicitly tagged as auto to be safe.
@@ -3454,7 +3454,7 @@ def detect_chart_patterns(klines, timeframe="1h", trade_type="swing"):
 
     pattern_result["shapes"] = shapes
     pattern_result["allCandidates"] = all_candidates
-    pattern_result = _apply_trendspider_pattern_theme(primary.get("type", ""), primary.get("bias", "neutral"), pattern_result)
+    pattern_result = _apply_pattern_theme(primary.get("type", ""), primary.get("bias", "neutral"), pattern_result)
 
     return {
         "version": 1,
