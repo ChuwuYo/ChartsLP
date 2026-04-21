@@ -3,7 +3,8 @@
 Candlestick chart pattern and trendline detection for Python.
 
 29 built-in pattern detectors. ATR-scaled tolerances that hold up on micro-cap
-prices down to 1e-9. Zero framework dependencies — just `numpy`.
+prices down to 1e-9. Zero framework dependencies — just `numpy`. Works on
+OHLCV dict input; no DataFrames required.
 
 ## Install
 
