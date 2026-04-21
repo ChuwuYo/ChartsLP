@@ -1128,7 +1128,45 @@ def _apply_pattern_theme(pattern_type, bias, pattern_result):
     return pattern_result
 
 
-def _pattern_selection_score(pattern_result, latest_index):
+# P2 state machine — unify detector states into FORMING / CONFIRMED / RETESTED.
+# Different trade_type profiles have opposite recency preferences:
+#   - scalp wants FORMING patterns (just-started, near latest price)
+#   - swing/position want CONFIRMED or RETESTED (tradeable entry)
+#
+# A trader toggling trade_type effectively toggles which state dominates.
+
+_STATE_FAMILY = {
+    "forming":    "FORMING",
+    "monitor":    "FORMING",
+    "breakout":   "CONFIRMED",
+    "breakdown":  "CONFIRMED",
+    "confirmed":  "CONFIRMED",
+    "failed":     "CONFIRMED",  # pattern completed (attempted move), CONFIRMED family
+    "retest":     "RETESTED",
+}
+# Any state not in this table silently resolves to 0 bonus — intended for
+# transitional states like "insufficient_data" which belong to no_clear_pattern
+# paths and should not contribute to scoring.
+
+_STATE_WEIGHT_BY_PROFILE = {
+    # Short-term trader: prefer the earliest valid signal (close to current price)
+    "scalp":    {"FORMING": 0.15, "CONFIRMED": 0.08, "RETESTED": 0.12},
+    # Swing / position: prefer confirmed / retested for cleaner entries
+    "swing":    {"FORMING": 0.02, "CONFIRMED": 0.10, "RETESTED": 0.15},
+    "position": {"FORMING": 0.02, "CONFIRMED": 0.10, "RETESTED": 0.15},
+}
+_DEFAULT_STATE_WEIGHT = _STATE_WEIGHT_BY_PROFILE["swing"]
+
+
+def _state_bonus(state: str, trade_type: str | None) -> float:
+    family = _STATE_FAMILY.get((state or "").lower())
+    if family is None:
+        return 0.0
+    weights = _STATE_WEIGHT_BY_PROFILE.get((trade_type or "swing").lower(), _DEFAULT_STATE_WEIGHT)
+    return weights.get(family, 0.0)
+
+
+def _pattern_selection_score(pattern_result, latest_index, trade_type=None):
     primary = (pattern_result or {}).get("primaryPattern") or {}
     pattern_type = str(primary.get("type") or "")
     if not pattern_type or pattern_type == "no_clear_pattern":
@@ -1136,15 +1174,7 @@ def _pattern_selection_score(pattern_result, latest_index):
 
     confidence = float(primary.get("confidence") or 0.0)
     state = str(primary.get("state") or "monitor").lower()
-    state_bonus_map = {
-        "breakout": 0.10,
-        "breakdown": 0.10,
-        "confirmed": 0.10,
-        "retest": 0.05,
-        "forming": 0.02,
-        "monitor": 0.0,
-    }
-    state_bonus = state_bonus_map.get(state, 0.0)
+    state_bonus = _state_bonus(state, trade_type)
 
     recent_index = None
     for pivot in (pattern_result or {}).get("shapePivots", []):
@@ -1157,8 +1187,22 @@ def _pattern_selection_score(pattern_result, latest_index):
     recency_bonus = 0.0
     if recent_index is not None and isinstance(latest_index, (int, float)):
         age = max(0, int(latest_index) - recent_index)
-        freshness = max(0.0, 1.0 - (age / 180.0))
-        recency_bonus = freshness * 0.12
+        # Recency decay tuned per trade_type.
+        # scalp wants "anything older than ~10 bars is irrelevant"; swing /
+        # position tolerate much older patterns (retest comes late).
+        # Weight also differs so scalp's max recency bonus (0.25) outranks
+        # the state_bonus gap (FORMING 0.15 vs CONFIRMED 0.08), and an
+        # older pattern's near-zero bonus cannot be compensated by
+        # high confidence alone.
+        profile = (trade_type or "swing").lower()
+        if profile == "scalp":
+            half_life, weight = 12.0, 0.25
+        elif profile == "position":
+            half_life, weight = 60.0, 0.08
+        else:  # swing (default)
+            half_life, weight = 35.0, 0.12
+        freshness = math.exp(-age / half_life)
+        recency_bonus = freshness * weight
 
     specificity_bonus_map = {
         "head_and_shoulders": 0.08,
@@ -1171,6 +1215,16 @@ def _pattern_selection_score(pattern_result, latest_index):
         "ascending_triangle": 0.02,
         "descending_triangle": 0.02,
         "symmetrical_triangle": 0.02,
+        # Wedges under LMW-strict geometry are specific, not generic — bump
+        # bonus to edge out v-reversal/channel fallbacks on converging-slope data.
+        "rising_wedge": 0.04,
+        "falling_wedge": 0.04,
+        # Flags have pole + counter-trend structure — high-information pattern.
+        # Bumped to edge out wedge mis-identification on post-pole drift.
+        "bull_flag": 0.05,
+        "bear_flag": 0.05,
+        "bull_pennant": 0.05,
+        "bear_pennant": 0.05,
         "bullish_vcp": 0.04,
         "bearish_vcp": 0.04,
         "ascending_channel": 0.01,
@@ -1178,8 +1232,10 @@ def _pattern_selection_score(pattern_result, latest_index):
     }
     specificity_bonus = specificity_bonus_map.get(pattern_type, 0.0)
 
+    # Wedges used to carry a "generic" penalty when detection was loose
+    # heuristic. LMW-strict wedge geometry (two converging same-direction
+    # slopes) is a high-information pattern — penalty removed in Step 5.
     generic_penalty_types = (
-        "falling_wedge", "rising_wedge",
         "bullish_trend_structure", "bearish_trend_structure",
     )
     generic_penalty = -0.04 if pattern_type in generic_penalty_types else 0.0
@@ -1242,7 +1298,7 @@ def _pattern_boundary_fingerprint(pattern_result):
     )
 
 
-def _dedupe_detector_candidates(detector_candidates, latest_index):
+def _dedupe_detector_candidates(detector_candidates, latest_index, trade_type=None):
     """If two detectors draw the same upper/lower lines but use different names, keep the more specific label.
 
     When the winning label clearly beats a generic fallback (e.g. wedge vs trend structure), nudge confidence up.
@@ -1290,7 +1346,7 @@ def _dedupe_detector_candidates(detector_candidates, latest_index):
                 primary["description"] = f"{desc} {note}".strip() if desc else note
 
         merged_result = {**winner_result, "primaryPattern": primary}
-        out.append((merged_result, _pattern_selection_score(merged_result, latest_index)))
+        out.append((merged_result, _pattern_selection_score(merged_result, latest_index, trade_type)))
 
     out.sort(
         key=lambda item: (
@@ -3167,7 +3223,31 @@ def _synthesize_boundary_trendlines(result):
     return result
 
 
-def detect_chart_patterns(klines, timeframe="1h", trade_type="swing"):
+def detect_chart_patterns(
+    klines,
+    timeframe="1h",
+    trade_type="swing",
+    *,
+    asset_class=None,
+    last_candle_synthetic=False,
+):
+    """Detect chart patterns over ``klines``.
+
+    Positional signature (klines, timeframe, trade_type) is **frozen** for
+    backward compatibility. New kwargs are additive and default-safe:
+
+    asset_class:
+        "crypto" / "stock" / "forex" / "etf" / "commodity" / None.
+        Used by the Tolerances resolver (chartslp.tolerances) for per-asset
+        threshold scaling. P4 currently passes the value through without
+        changing defaults — scalars stubbed 1.0. Reserved for future tuning.
+
+    last_candle_synthetic:
+        True when the caller fed a live-aggregated final bar whose OHLC is
+        still in flux (e.g. TwelveData WS trade-tick path). Pivot detection
+        excludes the last bar to avoid phantom pivots from in-flight ticks;
+        breakout/retest state is still evaluated against the live last close.
+    """
     candles = normalize_klines(klines)
     max_scan = _TIMEFRAME_MAX_SCAN.get(timeframe, 100)
     if len(candles) > max_scan:
@@ -3200,11 +3280,42 @@ def detect_chart_patterns(klines, timeframe="1h", trade_type="swing"):
     atr, tolerance, min_move, breakout_buffer = _calculate_pattern_tolerances(candles, trade_type)
 
     pivot_lr = {"1m": 2, "3m": 2, "5m": 2, "15m": 3, "30m": 3, "1h": 4, "4h": 4}.get(timeframe, 4)
-    pivots = _detect_pivots(candles, left=pivot_lr, right=pivot_lr, min_move=min_move * 0.5, include_tentative=True)
+    # When the last candle is a synthesized in-flight bar (TD live path), run
+    # pivot detection on the closed candles only — prevents phantom pivots
+    # from flickering trade ticks. The live last close still feeds state/
+    # breakout evaluation below via the full `candles` list.
+    pivot_input = candles[:-1] if last_candle_synthetic and len(candles) > 1 else candles
+    pivots = _detect_pivots(pivot_input, left=pivot_lr, right=pivot_lr, min_move=min_move * 0.5, include_tentative=True)
     display_pivots = pivots
     volume_ratio = _calculate_volume_ratio(candles)
 
+    # LMW-style geometric detectors (Step 5) take priority over legacy heuristics
+    # for the patterns they cover. Legacy path kept as safety net — if LMW
+    # returns None (strict geometry not met), the old detector may still fire.
+    from chartslp.lmw_detectors import (
+        detect_ascending_triangle_lmw,
+        detect_bear_flag_lmw,
+        detect_bull_flag_lmw,
+        detect_descending_triangle_lmw,
+        detect_falling_wedge_lmw,
+        detect_head_and_shoulders_lmw,
+        detect_inverse_head_and_shoulders_lmw,
+        detect_rising_wedge_lmw,
+        detect_symmetrical_triangle_lmw,
+    )
+
     detectors = [
+        # LMW-strict detectors first — higher base confidence wins scoring
+        detect_head_and_shoulders_lmw,
+        detect_inverse_head_and_shoulders_lmw,
+        detect_ascending_triangle_lmw,
+        detect_descending_triangle_lmw,
+        detect_symmetrical_triangle_lmw,
+        detect_rising_wedge_lmw,
+        detect_falling_wedge_lmw,
+        detect_bull_flag_lmw,
+        detect_bear_flag_lmw,
+        # Legacy path follows
         _detect_double_top,
         _detect_double_bottom,
         _detect_triple_top_bottom,
@@ -3233,9 +3344,9 @@ def detect_chart_patterns(klines, timeframe="1h", trade_type="swing"):
         result = detector(recent_pivots_for_detection, candles, tolerance, min_move, breakout_buffer, volume_ratio)
         if not result:
             continue
-        detector_candidates.append((result, _pattern_selection_score(result, latest_index)))
+        detector_candidates.append((result, _pattern_selection_score(result, latest_index, trade_type)))
 
-    detector_candidates = _dedupe_detector_candidates(detector_candidates, latest_index)
+    detector_candidates = _dedupe_detector_candidates(detector_candidates, latest_index, trade_type)
 
     if detector_candidates:
         def _last_shape_index(cand):
@@ -3255,13 +3366,37 @@ def detect_chart_patterns(klines, timeframe="1h", trade_type="swing"):
             if _last_shape_index(cand) >= recency_cutoff
         ]
         if recent_candidates:
-            recent_candidates.sort(
-                key=lambda item: (_last_shape_index(item[0]), item[1]),
-                reverse=True,
-            )
+            # Primary pattern selection differs by trade profile:
+            # - scalp: pure recency sort (pattern end closest to now wins).
+            #   Short-term traders act on whatever just formed; older
+            #   higher-confidence patterns belong in the alternatives toggle.
+            # - swing/position: score-first, recency tiebreaker. They need a
+            #   cleaner entry (retest/confirmed) and can tolerate a pattern
+            #   ending 30-50 bars back.
+            profile = (trade_type or "swing").lower()
+            if profile == "scalp":
+                recent_candidates.sort(
+                    key=lambda item: (_last_shape_index(item[0]), item[1]),
+                    reverse=True,
+                )
+            else:
+                recent_candidates.sort(
+                    key=lambda item: (item[1], _last_shape_index(item[0])),
+                    reverse=True,
+                )
             pattern_result = recent_candidates[0][0]
         elif detector_candidates:
             pattern_result = detector_candidates[0][0]
+
+    # Step 9 — Bulkowski prior: attach historical stats to the primary pattern.
+    # Purely informational metadata; does not affect scoring (scoring already
+    # ran). AI prompt and frontend both read from this.
+    if pattern_result and pattern_result.get("primaryPattern"):
+        from chartslp.bulkowski import lookup as _bulkowski_lookup
+        primary_type = (pattern_result["primaryPattern"] or {}).get("type") or ""
+        stats = _bulkowski_lookup(primary_type)
+        if stats:
+            pattern_result["primaryPattern"]["bulkowskiStats"] = stats
 
     s_clusters, r_clusters = _compute_clustered_levels(candles, pivots, atr)
 
@@ -3511,6 +3646,28 @@ def format_pattern_engine_context(pattern_engine, *, current_price=None, current
     bias = primary.get("bias", "neutral")
     state = primary.get("state", "monitor")
     lines.append(f"- Primary pattern: {label} | bias={bias} | state={state}")
+
+    # Bulkowski historical stats (Step 9) — surface so the AI can contextualise
+    # the pattern with historical failure rate and avg move. US equity sample
+    # per source/disclaimer attached to the stats dict.
+    bulkowski = primary.get("bulkowskiStats") or {}
+    if bulkowski:
+        bk_parts = []
+        fr = bulkowski.get("failure_rate")
+        mv = bulkowski.get("avg_move_pct")
+        n = bulkowski.get("sample_n")
+        if fr is not None:
+            bk_parts.append(f"hist failure {fr*100:.0f}%")
+        if mv is not None:
+            bk_parts.append(f"avg move {mv*100:.0f}%")
+        if n:
+            bk_parts.append(f"n={n}")
+        if bk_parts:
+            disclaimer = bulkowski.get("disclaimer") or ""
+            lines.append(
+                f"- Historical (Bulkowski): {' | '.join(bk_parts)}"
+                + (f" — {disclaimer}" if disclaimer else "")
+            )
 
     shapes = pattern_engine.get("shapes") or []
     for shape in shapes:
