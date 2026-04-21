@@ -9,7 +9,7 @@ from __future__ import annotations
 import math
 import random
 
-from chartpatterns import detect_chart_patterns
+from chartslp import detect_chart_patterns
 
 
 def synth_uptrend(n: int = 100, seed: int = 42) -> list[dict]:

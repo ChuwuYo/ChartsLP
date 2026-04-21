@@ -12,7 +12,7 @@ import math
 import random
 from pathlib import Path
 
-from chartpatterns import detect_chart_patterns
+from chartslp import detect_chart_patterns
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

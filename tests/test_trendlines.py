@@ -12,7 +12,7 @@ import random
 
 import pytest
 
-from chartpatterns import trendlines as te
+from chartslp import trendlines as te
 
 
 def _synth_trending_candles(n: int = 100, *, seed: int = 42) -> list[dict]:
@@ -208,7 +208,7 @@ def test_synthesize_boundary_trendlines_adds_lines_for_double_top() -> None:
     """Patterns like double_top emit only horizontalLevels; the synthesis
     helper must convert those into source='pattern' trendLines so Outline
     renders them."""
-    from chartpatterns import patterns as pe
+    from chartslp import patterns as pe
 
     result = {
         "primaryPattern": {"type": "double_top", "bias": "bearish"},
@@ -248,7 +248,7 @@ def test_synthesize_boundary_trendlines_adds_lines_for_double_top() -> None:
 
 def test_synthesize_boundary_trendlines_is_idempotent() -> None:
     """Calling synthesis twice must not duplicate lines."""
-    from chartpatterns import patterns as pe
+    from chartslp import patterns as pe
 
     result = {
         "primaryPattern": {"type": "rectangle_range", "bias": "neutral"},
@@ -357,7 +357,7 @@ def test_detect_chart_patterns_end_to_end_for_low_price_symbol() -> None:
     """Integration: full pipeline on PEPE-scale data must produce trendlines
     with meaningful touch counts (not every candle), non-empty horizontal
     levels, and distinct pattern structure — not all zeros."""
-    from chartpatterns import patterns as pe
+    from chartslp import patterns as pe
 
     candles = _synth_micro_cap_candles(n=100)
     result = pe.detect_chart_patterns(candles, "1m", "scalp")

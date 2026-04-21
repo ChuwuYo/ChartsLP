@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from chartpatterns.precision import smart_round_price
+from chartslp.precision import smart_round_price
 
 # ---------------------------------------------------------------------------
 # Utility helpers

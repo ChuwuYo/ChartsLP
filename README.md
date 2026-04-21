@@ -1,4 +1,4 @@
-# chartpatterns
+# chartslp
 
 Candlestick chart pattern and trendline detection for Python.
 
@@ -11,19 +11,19 @@ OHLCV dict input; no DataFrames required.
 Editable (for local development):
 
 ```bash
-pip install -e /path/to/chartpatterns
+pip install -e /path/to/chartslp
 ```
 
 From a git URL:
 
 ```bash
-pip install "chartpatterns @ git+https://github.com/YOUR_USER/chartpatterns.git@v0.1.0"
+pip install "chartslp @ git+https://github.com/YOUR_USER/chartslp.git@v0.1.0"
 ```
 
 ## Quick start
 
 ```python
-from chartpatterns import detect_chart_patterns
+from chartslp import detect_chart_patterns
 
 candles = [
     {"index": 0, "time": 1700000000, "open": 100.0, "high": 101.0,
@@ -55,7 +55,7 @@ for line in result["trendLines"]:
 ## Public API
 
 ```python
-from chartpatterns import (
+from chartslp import (
     detect_chart_patterns,
     format_pattern_engine_context,
     build_auto_trendlines,
@@ -70,7 +70,7 @@ from chartpatterns import (
 Type contracts (TypedDict):
 
 ```python
-from chartpatterns.types import (
+from chartslp.types import (
     Candle, Pivot, TrendLine, TrendLinePoint,
     HorizontalLevel, PatternShape, PrimaryPattern,
     PatternStats, PatternResult, TradeType, Timeframe,

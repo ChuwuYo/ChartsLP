@@ -1,7 +1,7 @@
 """Micro-cap example: PEPE/SHIB-scale prices (1e-5 to 1e-9 range).
 
 Demonstrates the sub-cent code path where fixed tolerances would collapse
-every candle into a "touch". chartpatterns scales tolerance to ATR.
+every candle into a "touch". chartslp scales tolerance to ATR.
 
 Run:
     python examples/micro_cap_usage.py
@@ -12,7 +12,7 @@ from __future__ import annotations
 import math
 import random
 
-from chartpatterns import detect_chart_patterns
+from chartslp import detect_chart_patterns
 
 
 def synth_pepe_like(n: int = 100, seed: int = 7) -> list[dict]:

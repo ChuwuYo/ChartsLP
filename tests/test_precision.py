@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from chartpatterns.precision import smart_round_percent, smart_round_price
+from chartslp.precision import smart_round_percent, smart_round_price
 
 
 def test_smart_round_price_normal():

@@ -1,4 +1,4 @@
-from chartpatterns.types import Candle, Pivot, TrendLine
+from chartslp.types import Candle, Pivot, TrendLine
 
 
 def test_candle_required_fields():

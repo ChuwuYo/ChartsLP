@@ -1,4 +1,4 @@
-"""Public type contracts for chartpatterns.
+"""Public type contracts for chartslp.
 
 Uses TypedDict for dict-based candle/pivot compatibility with existing
 consumers. No pydantic runtime dependency.

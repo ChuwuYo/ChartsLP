@@ -4,20 +4,20 @@ import math
 from collections import defaultdict
 from statistics import mean
 
-from chartpatterns.precision import smart_round_price
-from chartpatterns.trendlines import (
+from chartslp.precision import smart_round_price
+from chartslp.trendlines import (
     build_auto_trendlines as _trendline_build_auto_trendlines,
 )
-from chartpatterns.trendlines import (
+from chartslp.trendlines import (
     build_pattern_boundary_lines as _trendline_build_pattern_boundary_lines,
 )
-from chartpatterns.trendlines import (
+from chartslp.trendlines import (
     build_trend_line as _trendline_build_trend_line,
 )
-from chartpatterns.trendlines import (
+from chartslp.trendlines import (
     count_valid_touches as _trendline_count_valid_touches,
 )
-from chartpatterns.trendlines import (
+from chartslp.trendlines import (
     project_price as _trendline_project_price,
 )
 

@@ -1,12 +1,12 @@
-"""chartpatterns — candlestick pattern and trendline detection engine."""
+"""chartslp — candlestick pattern and trendline detection engine."""
 
-from chartpatterns._version import __version__
-from chartpatterns.patterns import (
+from chartslp._version import __version__
+from chartslp.patterns import (
     PATTERN_LABELS,
     detect_chart_patterns,
     format_pattern_engine_context,
 )
-from chartpatterns.trendlines import (
+from chartslp.trendlines import (
     build_auto_trendlines,
     build_pattern_boundary_lines,
     build_trend_line,

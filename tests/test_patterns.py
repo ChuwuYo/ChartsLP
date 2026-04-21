@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from chartpatterns import patterns as pattern_engine
+from chartslp import patterns as pattern_engine
 
 _DETECTOR_NAMES = (
     "_detect_double_top",

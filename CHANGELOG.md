@@ -17,7 +17,7 @@
   structures, rectangle ranges.
 - `smart_round_price()` utility for micro-cap precision (prices down to 1e-9
   keep meaningful significant digits).
-- TypedDict contracts in `chartpatterns.types`: `Candle`, `Pivot`,
+- TypedDict contracts in `chartslp.types`: `Candle`, `Pivot`,
   `TrendLine`, `PatternResult`, etc.
 - Test suite: 26 tests — unit coverage, end-to-end micro-cap scenarios,
   golden parity fixtures.
