@@ -684,6 +684,7 @@ def build_auto_trendlines(
     atr: float,
     max_pairs: int = 3,
     timeframe: str | None = None,
+    trade_type: str | None = None,
 ) -> list[dict]:
     """Generate multiple paired trendlines (upper + lower) ranked by score.
 
@@ -695,8 +696,13 @@ def build_auto_trendlines(
     1. Enhance pivots with numdiff
     2. Score all upper / lower candidates independently
     3. Deduplicate each side
-    4. Zip top-N upper with top-N lower → N pairs
-    5. Finalize each pair via build_trend_line with partner awareness
+    4. Rank per trade_type:
+       - scalp: sort by point_b.index (pair end closest to now wins); score
+         is used only as tiebreaker. Mirrors the pattern primary-selection
+         behaviour — short-term traders want the line that was just touched.
+       - swing / position (default): score-first, recency as tiebreaker.
+    5. Zip top-N upper with top-N lower → N pairs
+    6. Finalize each pair via build_trend_line with partner awareness
     """
     if not candles or not pivots:
         return []
@@ -732,9 +738,21 @@ def build_auto_trendlines(
     upper_candidates = _deduplicate_trendlines(upper_candidates, atr)
     lower_candidates = _deduplicate_trendlines(lower_candidates, atr)
 
-    # -- Step 4: Sort and take top-N per side --
-    upper_candidates.sort(key=lambda c: c["score"], reverse=True)
-    lower_candidates.sort(key=lambda c: c["score"], reverse=True)
+    # -- Step 4: Sort per trade_type and take top-N per side --
+    profile = (trade_type or "swing").lower()
+
+    def _end_idx(cand: dict) -> int:
+        pb = cand.get("point_b") or {}
+        return int(pb.get("index", 0))
+
+    if profile == "scalp":
+        # Pure-recency: pair end closest to the latest bar wins, score tiebreaker.
+        upper_candidates.sort(key=lambda c: (_end_idx(c), c.get("score", 0.0)), reverse=True)
+        lower_candidates.sort(key=lambda c: (_end_idx(c), c.get("score", 0.0)), reverse=True)
+    else:
+        # Swing / position: score-first, recency tiebreaker.
+        upper_candidates.sort(key=lambda c: (c.get("score", 0.0), _end_idx(c)), reverse=True)
+        lower_candidates.sort(key=lambda c: (c.get("score", 0.0), _end_idx(c)), reverse=True)
 
     top_uppers = upper_candidates[:max_pairs]
     top_lowers = lower_candidates[:max_pairs]

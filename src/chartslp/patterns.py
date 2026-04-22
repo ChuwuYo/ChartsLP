@@ -3169,9 +3169,11 @@ _TIMEFRAME_MAX_SCAN = {
 }
 
 
-def _build_auto_trendlines(candles, pivots, atr, timeframe=None):
+def _build_auto_trendlines(candles, pivots, atr, timeframe=None, trade_type=None):
     """Delegate to trendline_engine.build_auto_trendlines."""
-    return _trendline_build_auto_trendlines(candles, pivots, atr, timeframe=timeframe)
+    return _trendline_build_auto_trendlines(
+        candles, pivots, atr, timeframe=timeframe, trade_type=trade_type,
+    )
 
 
 _BOUNDARY_PATTERN_TYPES = frozenset({
@@ -3401,7 +3403,9 @@ def detect_chart_patterns(
     s_clusters, r_clusters = _compute_clustered_levels(candles, pivots, atr)
 
     # --- Decoupled trendline detection: always run independently ---
-    auto_trends = _build_auto_trendlines(candles, pivots, atr, timeframe=timeframe)
+    auto_trends = _build_auto_trendlines(
+        candles, pivots, atr, timeframe=timeframe, trade_type=trade_type,
+    )
     for tl in auto_trends:
         tl["source"] = "auto"
 
