@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 import math
 from collections import defaultdict
 from statistics import mean
 
 from chartslp.precision import smart_round_price
+
+logger = logging.getLogger(__name__)
 from chartslp.trendlines import (
     build_auto_trendlines as _trendline_build_auto_trendlines,
 )
@@ -3348,6 +3351,7 @@ def detect_chart_patterns(
             continue
         detector_candidates.append((result, _pattern_selection_score(result, latest_index, trade_type)))
 
+    pre_dedupe_count = len(detector_candidates)
     detector_candidates = _dedupe_detector_candidates(detector_candidates, latest_index, trade_type)
 
     if detector_candidates:
@@ -3410,6 +3414,21 @@ def detect_chart_patterns(
         tl["source"] = "auto"
 
     if not pattern_result:
+        # Diagnostic: log why we fell through to no_clear_pattern.
+        # Three scenarios surface here:
+        #   (a) detector pool truly empty        → pivot shape couldn't feed any detector
+        #   (b) all dedup-survivors filtered by recency cutoff (< 50% of window)
+        #   (c) detector raised silent exception (should be rare)
+        pivot_high_count = sum(1 for p in pivots if p.get("kind") == "high")
+        pivot_low_count = sum(1 for p in pivots if p.get("kind") == "low")
+        recent_pivot_count = len(recent_pivots_for_detection)
+        logger.warning(
+            "no_clear_pattern fallback: tf=%s trade=%s candles=%d pivots=%d (H=%d L=%d) "
+            "recent_for_detection=%d detectors_returned=%d after_dedupe=%d",
+            timeframe, trade_type, len(candles), len(pivots),
+            pivot_high_count, pivot_low_count,
+            recent_pivot_count, pre_dedupe_count, len(detector_candidates),
+        )
         pattern_result = {
             "primaryPattern": {
                 "type": "no_clear_pattern",
