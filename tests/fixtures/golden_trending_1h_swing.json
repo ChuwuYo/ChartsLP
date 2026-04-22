@@ -2,10 +2,432 @@
   "allCandidates": [
     {
       "bias": "bullish",
+      "confidence": 0.77,
+      "label": "Ascending Channel",
+      "lastIndex": 99,
+      "score": 0.94,
+      "shapes": [
+        {
+          "anchors": [
+            {
+              "index": 28,
+              "kind": "high",
+              "price": 108.242,
+              "role": "high_1",
+              "time": 1700100800
+            },
+            {
+              "index": 35,
+              "kind": "low",
+              "price": 101.453,
+              "role": "low_2",
+              "time": 1700126000
+            },
+            {
+              "index": 48,
+              "kind": "high",
+              "price": 111.406,
+              "role": "high_3",
+              "time": 1700172800
+            },
+            {
+              "index": 58,
+              "kind": "low",
+              "price": 104.253,
+              "role": "low_4",
+              "time": 1700208800
+            },
+            {
+              "index": 68,
+              "kind": "high",
+              "price": 114.252,
+              "role": "high_5",
+              "time": 1700244800
+            },
+            {
+              "index": 78,
+              "kind": "low",
+              "price": 107.351,
+              "role": "low_6",
+              "time": 1700280800
+            },
+            {
+              "index": 91,
+              "kind": "high",
+              "price": 117.434,
+              "role": "high_7",
+              "time": 1700327600
+            },
+            {
+              "index": 99,
+              "kind": "low",
+              "price": 110.97,
+              "role": "low_8",
+              "time": 1700356400
+            }
+          ],
+          "color": "#FFA813",
+          "confidence": 0.77,
+          "id": "ascending_channel-shape-1",
+          "label": "Ascending Channel",
+          "lines": [
+            {
+              "color": "#FFA813",
+              "id": "ascending_channel-structure-zigzag",
+              "lineType": "structure_zigzag",
+              "lineWidth": 2,
+              "points": [
+                {
+                  "price": 108.242,
+                  "time": 1700100800
+                },
+                {
+                  "price": 101.453,
+                  "time": 1700126000
+                },
+                {
+                  "price": 111.406,
+                  "time": 1700172800
+                },
+                {
+                  "price": 104.253,
+                  "time": 1700208800
+                },
+                {
+                  "price": 114.252,
+                  "time": 1700244800
+                },
+                {
+                  "price": 107.351,
+                  "time": 1700280800
+                },
+                {
+                  "price": 117.434,
+                  "time": 1700327600
+                },
+                {
+                  "price": 110.97,
+                  "time": 1700356400
+                }
+              ],
+              "style": "solid"
+            },
+            {
+              "color": "#FFA813",
+              "id": "ascending_channel-upper",
+              "lineType": "resistance_line",
+              "lineWidth": 2,
+              "points": [
+                {
+                  "price": 108.242,
+                  "time": 1700100800
+                },
+                {
+                  "price": 118.601,
+                  "time": 1700356400
+                }
+              ],
+              "source": "pattern",
+              "style": "solid"
+            },
+            {
+              "color": "#FFA813",
+              "id": "ascending_channel-lower",
+              "lineType": "support_line",
+              "lineWidth": 2,
+              "points": [
+                {
+                  "price": 101.453,
+                  "time": 1700126000
+                },
+                {
+                  "price": 110.97,
+                  "time": 1700356400
+                }
+              ],
+              "source": "pattern",
+              "style": "solid"
+            }
+          ],
+          "outlineSegments": [
+            [
+              {
+                "price": 108.242,
+                "time": 1700100800
+              },
+              {
+                "price": 101.453,
+                "time": 1700126000
+              }
+            ],
+            [
+              {
+                "price": 101.453,
+                "time": 1700126000
+              },
+              {
+                "price": 111.406,
+                "time": 1700172800
+              }
+            ],
+            [
+              {
+                "price": 111.406,
+                "time": 1700172800
+              },
+              {
+                "price": 104.253,
+                "time": 1700208800
+              }
+            ],
+            [
+              {
+                "price": 104.253,
+                "time": 1700208800
+              },
+              {
+                "price": 114.252,
+                "time": 1700244800
+              }
+            ],
+            [
+              {
+                "price": 114.252,
+                "time": 1700244800
+              },
+              {
+                "price": 107.351,
+                "time": 1700280800
+              }
+            ],
+            [
+              {
+                "price": 107.351,
+                "time": 1700280800
+              },
+              {
+                "price": 117.434,
+                "time": 1700327600
+              }
+            ],
+            [
+              {
+                "price": 117.434,
+                "time": 1700327600
+              },
+              {
+                "price": 110.97,
+                "time": 1700356400
+              }
+            ]
+          ],
+          "points": [
+            {
+              "index": 28,
+              "kind": "high",
+              "price": 108.242,
+              "role": "high_1",
+              "time": 1700100800
+            },
+            {
+              "index": 35,
+              "kind": "low",
+              "price": 101.453,
+              "role": "low_2",
+              "time": 1700126000
+            },
+            {
+              "index": 48,
+              "kind": "high",
+              "price": 111.406,
+              "role": "high_3",
+              "time": 1700172800
+            },
+            {
+              "index": 58,
+              "kind": "low",
+              "price": 104.253,
+              "role": "low_4",
+              "time": 1700208800
+            },
+            {
+              "index": 68,
+              "kind": "high",
+              "price": 114.252,
+              "role": "high_5",
+              "time": 1700244800
+            },
+            {
+              "index": 78,
+              "kind": "low",
+              "price": 107.351,
+              "role": "low_6",
+              "time": 1700280800
+            },
+            {
+              "index": 91,
+              "kind": "high",
+              "price": 117.434,
+              "role": "high_7",
+              "time": 1700327600
+            },
+            {
+              "index": 99,
+              "kind": "low",
+              "price": 110.97,
+              "role": "low_8",
+              "time": 1700356400
+            }
+          ],
+          "state": "forming",
+          "type": "ascending_channel",
+          "zones": []
+        }
+      ],
+      "trendLines": [
+        {
+          "color": "#FFA813",
+          "id": "ascending_channel-upper",
+          "label": "Upper",
+          "points": [
+            {
+              "price": 108.242,
+              "time": 1700100800
+            },
+            {
+              "price": 118.601,
+              "time": 1700356400
+            }
+          ],
+          "source": "pattern",
+          "style": "solid"
+        },
+        {
+          "color": "#FFA813",
+          "id": "ascending_channel-lower",
+          "label": "Lower",
+          "points": [
+            {
+              "price": 101.453,
+              "time": 1700126000
+            },
+            {
+              "price": 110.97,
+              "time": 1700356400
+            }
+          ],
+          "source": "pattern",
+          "style": "solid"
+        },
+        {
+          "color": "#B8E600",
+          "id": "auto-upper",
+          "label": "Resistance",
+          "pair": 1,
+          "points": [
+            {
+              "price": 105.335,
+              "time": 1700021600
+            },
+            {
+              "price": 118.573,
+              "time": 1700356400
+            }
+          ],
+          "score": 54.42,
+          "source": "auto",
+          "style": "dashed",
+          "touches": 27
+        },
+        {
+          "color": "#B8E600",
+          "id": "auto-lower",
+          "label": "Support",
+          "pair": 1,
+          "points": [
+            {
+              "price": 97.9879,
+              "time": 1700057600
+            },
+            {
+              "price": 110.97,
+              "time": 1700356400
+            }
+          ],
+          "score": 50.41,
+          "source": "auto",
+          "style": "dashed",
+          "touches": 25
+        },
+        {
+          "color": "#B8E600",
+          "id": "auto-upper-2",
+          "label": "Resistance",
+          "pair": 2,
+          "points": [
+            {
+              "price": 105.335,
+              "time": 1700021600
+            },
+            {
+              "price": 112.602,
+              "time": 1700219600
+            }
+          ],
+          "score": 14.11,
+          "source": "auto",
+          "style": "dashed",
+          "touches": 7
+        },
+        {
+          "color": "#B8E600",
+          "id": "auto-lower-2",
+          "label": "Support",
+          "pair": 2,
+          "points": [
+            {
+              "price": 101.453,
+              "time": 1700126000
+            },
+            {
+              "price": 108.392,
+              "time": 1700331200
+            }
+          ],
+          "score": 18.11,
+          "source": "auto",
+          "style": "dashed",
+          "touches": 9
+        },
+        {
+          "color": "#B8E600",
+          "id": "auto-lower-3",
+          "label": "Support",
+          "pair": 3,
+          "points": [
+            {
+              "price": 97.9879,
+              "time": 1700057600
+            },
+            {
+              "price": 106.558,
+              "time": 1700226800
+            }
+          ],
+          "score": 12.1,
+          "source": "auto",
+          "style": "dashed",
+          "touches": 6
+        }
+      ],
+      "type": "ascending_channel"
+    },
+    {
+      "bias": "bullish",
       "confidence": 0.65,
       "label": "Ascending Channel",
       "lastIndex": 99,
-      "score": 0.8,
+      "score": 0.82,
       "shapes": [
         {
           "anchors": [
@@ -206,106 +628,6 @@
           ],
           "source": "pattern",
           "style": "solid"
-        },
-        {
-          "color": "#B8E600",
-          "id": "auto-upper",
-          "label": "Resistance",
-          "pair": 1,
-          "points": [
-            {
-              "price": 105.335,
-              "time": 1700021600
-            },
-            {
-              "price": 118.573,
-              "time": 1700356400
-            }
-          ],
-          "score": 54.42,
-          "source": "auto",
-          "style": "dashed",
-          "touches": 27
-        },
-        {
-          "color": "#B8E600",
-          "id": "auto-lower",
-          "label": "Support",
-          "pair": 1,
-          "points": [
-            {
-              "price": 97.9879,
-              "time": 1700057600
-            },
-            {
-              "price": 110.97,
-              "time": 1700356400
-            }
-          ],
-          "score": 50.41,
-          "source": "auto",
-          "style": "dashed",
-          "touches": 25
-        },
-        {
-          "color": "#B8E600",
-          "id": "auto-upper-2",
-          "label": "Resistance",
-          "pair": 2,
-          "points": [
-            {
-              "price": 105.335,
-              "time": 1700021600
-            },
-            {
-              "price": 112.602,
-              "time": 1700219600
-            }
-          ],
-          "score": 14.11,
-          "source": "auto",
-          "style": "dashed",
-          "touches": 7
-        },
-        {
-          "color": "#B8E600",
-          "id": "auto-lower-2",
-          "label": "Support",
-          "pair": 2,
-          "points": [
-            {
-              "price": 101.453,
-              "time": 1700126000
-            },
-            {
-              "price": 108.392,
-              "time": 1700331200
-            }
-          ],
-          "score": 18.11,
-          "source": "auto",
-          "style": "dashed",
-          "touches": 9
-        },
-        {
-          "color": "#B8E600",
-          "id": "auto-lower-3",
-          "label": "Support",
-          "pair": 3,
-          "points": [
-            {
-              "price": 97.9879,
-              "time": 1700057600
-            },
-            {
-              "price": 106.558,
-              "time": 1700226800
-            }
-          ],
-          "score": 12.1,
-          "source": "auto",
-          "style": "dashed",
-          "touches": 6
         }
       ],
       "type": "ascending_channel"
@@ -613,8 +935,17 @@
   "markers": [],
   "primaryPattern": {
     "bias": "bullish",
-    "confidence": 0.65,
-    "description": "Parallel upward channel containing price swings with trend continuation bias.",
+    "bulkowskiStats": {
+      "avg_move_pct": 0.14,
+      "disclaimer": "US equity sample, daily bars. Crypto/intraday behaviour is out of sample.",
+      "failure_rate": 0.18,
+      "rank_down": 25,
+      "rank_up": 20,
+      "sample_n": 1200,
+      "source": "Bulkowski, T. (2021). Encyclopedia of Chart Patterns, 3rd ed.; thepatternsite.com"
+    },
+    "confidence": 0.77,
+    "description": "LMW-style ascending channel via parallel slope regression.",
     "label": "Ascending Channel",
     "state": "forming",
     "type": "ascending_channel"
@@ -623,36 +954,64 @@
     {
       "anchors": [
         {
+          "index": 28,
+          "kind": "high",
+          "price": 108.242,
+          "role": "high_1",
+          "time": 1700100800
+        },
+        {
+          "index": 35,
+          "kind": "low",
+          "price": 101.453,
+          "role": "low_2",
+          "time": 1700126000
+        },
+        {
+          "index": 48,
+          "kind": "high",
+          "price": 111.406,
+          "role": "high_3",
+          "time": 1700172800
+        },
+        {
+          "index": 58,
+          "kind": "low",
+          "price": 104.253,
+          "role": "low_4",
+          "time": 1700208800
+        },
+        {
           "index": 68,
           "kind": "high",
           "price": 114.252,
-          "role": "high_1",
+          "role": "high_5",
           "time": 1700244800
         },
         {
           "index": 78,
           "kind": "low",
           "price": 107.351,
-          "role": "low_2",
+          "role": "low_6",
           "time": 1700280800
         },
         {
           "index": 91,
           "kind": "high",
           "price": 117.434,
-          "role": "high_3",
+          "role": "high_7",
           "time": 1700327600
         },
         {
           "index": 99,
           "kind": "low",
           "price": 110.97,
-          "role": "low_4",
+          "role": "low_8",
           "time": 1700356400
         }
       ],
       "color": "#FFA813",
-      "confidence": 0.65,
+      "confidence": 0.77,
       "id": "ascending_channel-shape-1",
       "label": "Ascending Channel",
       "lines": [
@@ -662,6 +1021,22 @@
           "lineType": "structure_zigzag",
           "lineWidth": 2,
           "points": [
+            {
+              "price": 108.242,
+              "time": 1700100800
+            },
+            {
+              "price": 101.453,
+              "time": 1700126000
+            },
+            {
+              "price": 111.406,
+              "time": 1700172800
+            },
+            {
+              "price": 104.253,
+              "time": 1700208800
+            },
             {
               "price": 114.252,
               "time": 1700244800
@@ -683,16 +1058,16 @@
         },
         {
           "color": "#FFA813",
-          "id": "pattern-upper",
+          "id": "ascending_channel-upper",
           "lineType": "resistance_line",
           "lineWidth": 2,
           "points": [
             {
-              "price": 114.252,
-              "time": 1700244800
+              "price": 108.242,
+              "time": 1700100800
             },
             {
-              "price": 118.541,
+              "price": 118.601,
               "time": 1700356400
             }
           ],
@@ -701,13 +1076,13 @@
         },
         {
           "color": "#FFA813",
-          "id": "pattern-lower",
+          "id": "ascending_channel-lower",
           "lineType": "support_line",
           "lineWidth": 2,
           "points": [
             {
-              "price": 107.351,
-              "time": 1700280800
+              "price": 101.453,
+              "time": 1700126000
             },
             {
               "price": 110.97,
@@ -719,6 +1094,46 @@
         }
       ],
       "outlineSegments": [
+        [
+          {
+            "price": 108.242,
+            "time": 1700100800
+          },
+          {
+            "price": 101.453,
+            "time": 1700126000
+          }
+        ],
+        [
+          {
+            "price": 101.453,
+            "time": 1700126000
+          },
+          {
+            "price": 111.406,
+            "time": 1700172800
+          }
+        ],
+        [
+          {
+            "price": 111.406,
+            "time": 1700172800
+          },
+          {
+            "price": 104.253,
+            "time": 1700208800
+          }
+        ],
+        [
+          {
+            "price": 104.253,
+            "time": 1700208800
+          },
+          {
+            "price": 114.252,
+            "time": 1700244800
+          }
+        ],
         [
           {
             "price": 114.252,
@@ -752,31 +1167,59 @@
       ],
       "points": [
         {
+          "index": 28,
+          "kind": "high",
+          "price": 108.242,
+          "role": "high_1",
+          "time": 1700100800
+        },
+        {
+          "index": 35,
+          "kind": "low",
+          "price": 101.453,
+          "role": "low_2",
+          "time": 1700126000
+        },
+        {
+          "index": 48,
+          "kind": "high",
+          "price": 111.406,
+          "role": "high_3",
+          "time": 1700172800
+        },
+        {
+          "index": 58,
+          "kind": "low",
+          "price": 104.253,
+          "role": "low_4",
+          "time": 1700208800
+        },
+        {
           "index": 68,
           "kind": "high",
           "price": 114.252,
-          "role": "high_1",
+          "role": "high_5",
           "time": 1700244800
         },
         {
           "index": 78,
           "kind": "low",
           "price": 107.351,
-          "role": "low_2",
+          "role": "low_6",
           "time": 1700280800
         },
         {
           "index": 91,
           "kind": "high",
           "price": 117.434,
-          "role": "high_3",
+          "role": "high_7",
           "time": 1700327600
         },
         {
           "index": 99,
           "kind": "low",
           "price": 110.97,
-          "role": "low_4",
+          "role": "low_8",
           "time": 1700356400
         }
       ],
@@ -790,7 +1233,7 @@
     "pivotCount": 10,
     "volumeRatio": 1.0
   },
-  "summary": "Ascending Channel (forming, 65%)",
+  "summary": "Ascending Channel (forming, 77%)",
   "swingPoints": [
     {
       "index": 6,
@@ -869,15 +1312,15 @@
   "trendLines": [
     {
       "color": "#FFA813",
-      "id": "pattern-upper",
+      "id": "ascending_channel-upper",
       "label": "Upper",
       "points": [
         {
-          "price": 114.252,
-          "time": 1700244800
+          "price": 108.242,
+          "time": 1700100800
         },
         {
-          "price": 118.541,
+          "price": 118.601,
           "time": 1700356400
         }
       ],
@@ -886,12 +1329,12 @@
     },
     {
       "color": "#FFA813",
-      "id": "pattern-lower",
+      "id": "ascending_channel-lower",
       "label": "Lower",
       "points": [
         {
-          "price": 107.351,
-          "time": 1700280800
+          "price": 101.453,
+          "time": 1700126000
         },
         {
           "price": 110.97,

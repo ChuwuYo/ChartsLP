@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import logging
 import math
 from collections import defaultdict
 from statistics import mean
 
 from chartslp.precision import smart_round_price
-
-logger = logging.getLogger(__name__)
 from chartslp.trendlines import (
     build_auto_trendlines as _trendline_build_auto_trendlines,
 )
@@ -1230,8 +1227,11 @@ def _pattern_selection_score(pattern_result, latest_index, trade_type=None):
         "bear_pennant": 0.05,
         "bullish_vcp": 0.04,
         "bearish_vcp": 0.04,
-        "ascending_channel": 0.01,
-        "descending_channel": 0.01,
+        # Channels under LMW slope-regression are reliably identified structures
+        # (parallel + same-sign slope + width stability). Bump from the legacy
+        # 0.01 "generic" tier to 0.03, in line with triangles.
+        "ascending_channel": 0.03,
+        "descending_channel": 0.03,
     }
     specificity_bonus = specificity_bonus_map.get(pattern_type, 0.0)
 
@@ -3298,9 +3298,11 @@ def detect_chart_patterns(
     # for the patterns they cover. Legacy path kept as safety net — if LMW
     # returns None (strict geometry not met), the old detector may still fire.
     from chartslp.lmw_detectors import (
+        detect_ascending_channel_lmw,
         detect_ascending_triangle_lmw,
         detect_bear_flag_lmw,
         detect_bull_flag_lmw,
+        detect_descending_channel_lmw,
         detect_descending_triangle_lmw,
         detect_falling_wedge_lmw,
         detect_head_and_shoulders_lmw,
@@ -3320,6 +3322,8 @@ def detect_chart_patterns(
         detect_falling_wedge_lmw,
         detect_bull_flag_lmw,
         detect_bear_flag_lmw,
+        detect_ascending_channel_lmw,
+        detect_descending_channel_lmw,
         # Legacy path follows
         _detect_double_top,
         _detect_double_bottom,
@@ -3351,7 +3355,6 @@ def detect_chart_patterns(
             continue
         detector_candidates.append((result, _pattern_selection_score(result, latest_index, trade_type)))
 
-    pre_dedupe_count = len(detector_candidates)
     detector_candidates = _dedupe_detector_candidates(detector_candidates, latest_index, trade_type)
 
     if detector_candidates:
@@ -3414,21 +3417,6 @@ def detect_chart_patterns(
         tl["source"] = "auto"
 
     if not pattern_result:
-        # Diagnostic: log why we fell through to no_clear_pattern.
-        # Three scenarios surface here:
-        #   (a) detector pool truly empty        → pivot shape couldn't feed any detector
-        #   (b) all dedup-survivors filtered by recency cutoff (< 50% of window)
-        #   (c) detector raised silent exception (should be rare)
-        pivot_high_count = sum(1 for p in pivots if p.get("kind") == "high")
-        pivot_low_count = sum(1 for p in pivots if p.get("kind") == "low")
-        recent_pivot_count = len(recent_pivots_for_detection)
-        logger.warning(
-            "no_clear_pattern fallback: tf=%s trade=%s candles=%d pivots=%d (H=%d L=%d) "
-            "recent_for_detection=%d detectors_returned=%d after_dedupe=%d",
-            timeframe, trade_type, len(candles), len(pivots),
-            pivot_high_count, pivot_low_count,
-            recent_pivot_count, pre_dedupe_count, len(detector_candidates),
-        )
         pattern_result = {
             "primaryPattern": {
                 "type": "no_clear_pattern",

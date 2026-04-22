@@ -422,6 +422,163 @@ def detect_symmetrical_triangle_lmw(pivots, candles, tolerance, min_move, breako
 
 
 # ---------------------------------------------------------------------------
+# Channels (ascending, descending) — parallel slope regression
+# ---------------------------------------------------------------------------
+
+def _channel_core(
+    pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
+    *, direction,
+):
+    """LMW-style channel detection via least-squares slope regression.
+
+    Unlike legacy ``_detect_channel`` which demands exactly 4 pivots in strict
+    high-low-high-low order, this fits independent lines to the high-series
+    and low-series pivots, tolerating missing swings the fractal detector
+    failed to catch on noisy data.
+
+    direction="ascending":   both slopes positive, near-parallel → bullish continuation
+    direction="descending":  both slopes negative, near-parallel → bearish continuation
+    """
+    from chartslp.patterns import (
+        PATTERN_LABELS,
+        _avg_bar_length,
+        _pattern_confidence,
+    )
+    from chartslp.precision import smart_round_price
+    from chartslp.trendlines import build_trend_line
+
+    if len(pivots) < 4 or not candles:
+        return None
+
+    # Widen the scan window vs triangle/wedge — channels routinely span 40-80
+    # bars on intraday TFs and can have 6+ pivots the engine is allowed to see.
+    scan = pivots[-10:]
+    highs = [p for p in scan if p["kind"] == "high"]
+    lows = [p for p in scan if p["kind"] == "low"]
+    if len(highs) < 2 or len(lows) < 2:
+        return None
+
+    top_slope, top_int, top_rmse = _fit_line(highs[-4:] if len(highs) >= 4 else highs)
+    bot_slope, bot_int, bot_rmse = _fit_line(lows[-4:] if len(lows) >= 4 else lows)
+
+    avg_bar = _avg_bar_length(candles, scan[0]["index"], scan[-1]["index"] + 1)
+    if avg_bar <= 0:
+        return None
+
+    flat_tol = max(avg_bar * 0.05, min_move * 0.05)
+
+    if direction == "ascending":
+        if not (top_slope > flat_tol and bot_slope > flat_tol):
+            return None
+        pattern_type = "ascending_channel"
+        bias = "bullish"
+    else:  # descending
+        if not (top_slope < -flat_tol and bot_slope < -flat_tol):
+            return None
+        pattern_type = "descending_channel"
+        bias = "bearish"
+
+    # Near-parallel: slope ratio close to 1.0. Loose threshold to accept real
+    # channels that drift slightly (width_change ≤ 0.35 maps to ratio ≥ ~0.65).
+    sign_aligned = top_slope * bot_slope > 0
+    if not sign_aligned:
+        return None
+    ratio = min(abs(top_slope), abs(bot_slope)) / max(abs(top_slope), abs(bot_slope))
+    if ratio < 0.60:
+        return None  # diverging or converging enough to be wedge/triangle
+
+    # Channel width must stay roughly constant from start to end of the scan
+    last_idx = candles[-1]["index"]
+    x_start = scan[0]["index"]
+    x_end = last_idx
+    top_at_start = top_slope * x_start + top_int
+    bot_at_start = bot_slope * x_start + bot_int
+    top_at_end = top_slope * x_end + top_int
+    bot_at_end = bot_slope * x_end + bot_int
+    width_start = top_at_start - bot_at_start
+    width_end = top_at_end - bot_at_end
+    if width_start <= 0 or width_end <= 0:
+        return None
+    width_change = abs(width_end - width_start) / max(width_start, 1e-9)
+    if width_change > 0.40:
+        return None
+
+    # Minimum amplitude — don't fire on micro-channels
+    price_range = max(p["price"] for p in scan) - min(p["price"] for p in scan)
+    if price_range < min_move * 1.0:
+        return None
+
+    top_fit = max(0.0, 1.0 - top_rmse / max(avg_bar, 1e-9))
+    bot_fit = max(0.0, 1.0 - bot_rmse / max(avg_bar, 1e-9))
+
+    top_pivots = sorted(highs[-4:] if len(highs) >= 4 else highs, key=lambda p: p["index"])
+    bot_pivots = sorted(lows[-4:] if len(lows) >= 4 else lows, key=lambda p: p["index"])
+    upper = build_trend_line(
+        f"{pattern_type}-upper", "Upper", "#ef4444", "solid",
+        top_pivots[0], top_pivots[-1], candles,
+    )
+    lower = build_trend_line(
+        f"{pattern_type}-lower", "Lower", "#22c55e", "solid",
+        bot_pivots[0], bot_pivots[-1], candles,
+    )
+
+    current_price = candles[-1]["close"]
+    top_projected = top_at_end
+    bot_projected = bot_at_end
+
+    if current_price > top_projected + breakout_buffer:
+        state = "breakout"
+    elif current_price < bot_projected - breakout_buffer:
+        state = "breakdown"
+    else:
+        state = "forming"
+
+    volume_score = min(1.0, max(volume_ratio - 1.0, 0.0))
+    confidence = _pattern_confidence(
+        0.52,
+        top_fit * 0.18,
+        bot_fit * 0.18,
+        ratio * 0.10,
+        (1.0 - width_change) * 0.08,
+        volume_score * 0.04,
+    )
+
+    shape_pivots = sorted(top_pivots + bot_pivots, key=lambda p: p["index"])
+    trend_lines = [ln for ln in (upper, lower) if ln]
+    for ln in trend_lines:
+        ln["source"] = "pattern"
+
+    return {
+        "primaryPattern": {
+            "type": pattern_type,
+            "label": PATTERN_LABELS[pattern_type],
+            "bias": bias,
+            "state": state,
+            "confidence": confidence,
+            "description": f"LMW-style {pattern_type.replace('_', ' ')} via parallel slope regression.",
+        },
+        "shapePivots": shape_pivots,
+        "trendLines": trend_lines,
+        "horizontalLevels": [],
+        "markers": [],
+        "levels": {
+            "support": smart_round_price(bot_projected),
+            "resistance": smart_round_price(top_projected),
+        },
+    }
+
+
+def detect_ascending_channel_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+    return _channel_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
+                         direction="ascending")
+
+
+def detect_descending_channel_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+    return _channel_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
+                         direction="descending")
+
+
+# ---------------------------------------------------------------------------
 # Wedges (rising, falling) — both lines slope same direction, converge
 # ---------------------------------------------------------------------------
 
