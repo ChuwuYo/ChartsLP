@@ -670,6 +670,23 @@ _MAX_PIVOTS_BY_INTERVAL: dict[str, int] = {
 }
 _DEFAULT_MAX_PIVOTS = 15
 
+# Near-end lookback window per timeframe (in bars). Used by auto-trendline
+# dedupe/pick to guarantee at least one candidate whose point_b lands in
+# this recent slice, even when the global candidate pool is dominated by
+# older long-span lines. Values ~ 4× typical pattern span per TF.
+_NEAR_WINDOW_BY_INTERVAL: dict[str, int] = {
+    "1m": 40, "3m": 40, "5m": 40, "15m": 60,
+    "30m": 60, "1h": 80, "4h": 120,
+    "1d": 200, "1w": 400, "1M": 400,
+}
+_DEFAULT_NEAR_WINDOW = 80
+
+
+def _resolve_near_window(timeframe: str | None) -> int:
+    if not timeframe:
+        return _DEFAULT_NEAR_WINDOW
+    return _NEAR_WINDOW_BY_INTERVAL.get(timeframe, _DEFAULT_NEAR_WINDOW)
+
 
 def _resolve_max_pivots(timeframe: str | None) -> int:
     """Return the pivot-scan budget for the given candle interval."""
@@ -734,28 +751,69 @@ def build_auto_trendlines(
             if r:
                 lower_candidates.append(r)
 
-    # -- Step 3: Deduplicate --
-    upper_candidates = _deduplicate_trendlines(upper_candidates, atr)
-    lower_candidates = _deduplicate_trendlines(lower_candidates, atr)
-
-    # -- Step 4: Sort per trade_type and take top-N per side --
-    profile = (trade_type or "swing").lower()
+    # -- Step 3: Deduplicate — partition by end-bucket first --
+    #
+    # A single global dedupe pool lets long-span lines with many touches
+    # silently swallow near-end short-span lines whose projected price is
+    # close (they get clustered together, loser discarded). Split into
+    # "near" and "far" buckets by ``point_b.index`` and dedupe each
+    # independently, then merge. Every candidate retains its end position
+    # semantics — long-span structural lines stay intact in the "far"
+    # bucket, fresh lines near current price stay intact in the "near"
+    # bucket. Zero new candidates, zero gate changes, zero quality drop.
+    last_idx = len(candles) - 1
+    near_window = _resolve_near_window(timeframe)
+    near_cutoff = max(0, last_idx - near_window)
 
     def _end_idx(cand: dict) -> int:
         pb = cand.get("point_b") or {}
         return int(pb.get("index", 0))
 
-    if profile == "scalp":
-        # Pure-recency: pair end closest to the latest bar wins, score tiebreaker.
-        upper_candidates.sort(key=lambda c: (_end_idx(c), c.get("score", 0.0)), reverse=True)
-        lower_candidates.sort(key=lambda c: (_end_idx(c), c.get("score", 0.0)), reverse=True)
-    else:
-        # Swing / position: score-first, recency tiebreaker.
-        upper_candidates.sort(key=lambda c: (c.get("score", 0.0), _end_idx(c)), reverse=True)
-        lower_candidates.sort(key=lambda c: (c.get("score", 0.0), _end_idx(c)), reverse=True)
+    def _partition(cands: list[dict]) -> tuple[list[dict], list[dict]]:
+        near, far = [], []
+        for c in cands:
+            (near if _end_idx(c) >= near_cutoff else far).append(c)
+        return near, far
 
-    top_uppers = upper_candidates[:max_pairs]
-    top_lowers = lower_candidates[:max_pairs]
+    upper_near, upper_far = _partition(upper_candidates)
+    lower_near, lower_far = _partition(lower_candidates)
+
+    upper_near = _deduplicate_trendlines(upper_near, atr)
+    upper_far = _deduplicate_trendlines(upper_far, atr)
+    lower_near = _deduplicate_trendlines(lower_near, atr)
+    lower_far = _deduplicate_trendlines(lower_far, atr)
+
+    # -- Step 4: Sort per trade_type and take top-N per side --
+    profile = (trade_type or "swing").lower()
+
+    def _sort_key_scalp(c: dict) -> tuple:
+        return (_end_idx(c), c.get("score", 0.0))
+
+    def _sort_key_quality(c: dict) -> tuple:
+        return (c.get("score", 0.0), _end_idx(c))
+
+    sort_key = _sort_key_scalp if profile == "scalp" else _sort_key_quality
+
+    for bucket in (upper_near, upper_far, lower_near, lower_far):
+        bucket.sort(key=sort_key, reverse=True)
+
+    # Interleave near first, then fall back to far. Guarantees at least one
+    # near-end candidate surfaces even when far-bucket outscores it on touch
+    # count. Caps remain bounded by max_pairs.
+    def _merge_top(near: list[dict], far: list[dict], limit: int) -> list[dict]:
+        picked: list[dict] = []
+        n_near_slots = min(len(near), max(1, limit // 2)) if near else 0
+        picked.extend(near[:n_near_slots])
+        remaining = limit - len(picked)
+        if remaining > 0 and far:
+            picked.extend(far[:remaining])
+        if len(picked) < limit and near:
+            extra = [c for c in near[n_near_slots:] if c not in picked]
+            picked.extend(extra[: limit - len(picked)])
+        return picked[:limit]
+
+    top_uppers = _merge_top(upper_near, upper_far, max_pairs)
+    top_lowers = _merge_top(lower_near, lower_far, max_pairs)
 
     # -- Step 5: Build pairs by zipping top-N, finalize with partner awareness --
     lines: list[dict] = []
