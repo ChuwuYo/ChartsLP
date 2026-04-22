@@ -295,8 +295,10 @@ def _triangle_core(
     if avg_bar <= 0:
         return None
 
-    # Slope tolerance in price/bar: a "flat" line has |slope| < flat_tol
-    flat_tol = max(avg_bar * 0.05, min_move * 0.05)
+    # Slope tolerance in price/bar: a "flat" line has |slope| < flat_tol.
+    # Per-bar only — mixing ``min_move`` inflated this on high-priced assets
+    # (XAU/USD ~4800) and misclassified sloped lines as flat.
+    flat_tol = max(avg_bar * 0.05, 1e-9)
     # Convergence check for sym triangle: top must descend, bottom ascend
     # and they should converge (not diverge)
 
@@ -465,7 +467,12 @@ def _channel_core(
     if avg_bar <= 0:
         return None
 
-    flat_tol = max(avg_bar * 0.05, min_move * 0.05)
+    # flat_tol is a per-bar price-change cutoff. Previously mixed in
+    # ``min_move * 0.05`` which can be huge on high-priced assets (XAU/USD
+    # last_price ~ 4800 × 0.0021 ≈ 10 → flat_tol ≈ 0.5) and wrongly flagged
+    # genuinely sloped lines as "flat". Use only the per-bar geometric
+    # range, same style as pytrendline_ref ``avg_candle_range * 0.05``.
+    flat_tol = max(avg_bar * 0.05, 1e-9)
 
     if direction == "ascending":
         if not (top_slope > flat_tol and bot_slope > flat_tol):
@@ -478,13 +485,17 @@ def _channel_core(
         pattern_type = "descending_channel"
         bias = "bearish"
 
-    # Near-parallel: slope ratio close to 1.0. Loose threshold to accept real
-    # channels that drift slightly (width_change ≤ 0.35 maps to ratio ≥ ~0.65).
+    # Near-parallel: slope ratio close to 1.0. Threshold 0.45 chosen by
+    # reference-library benchmarking — pytrendline's "duplicate slope" /
+    # "max error" pair spans a ~3.3× loose/strict range; a noisy real channel
+    # (BTC 1m / XAU/USD 1m) fits 0.45-0.70 post-noise while true wedges
+    # consistently fall below 0.30. Tightening again will miss fresh channels
+    # with < 6 touches per side.
     sign_aligned = top_slope * bot_slope > 0
     if not sign_aligned:
         return None
     ratio = min(abs(top_slope), abs(bot_slope)) / max(abs(top_slope), abs(bot_slope))
-    if ratio < 0.60:
+    if ratio < 0.45:
         return None  # diverging or converging enough to be wedge/triangle
 
     # Channel width must stay roughly constant from start to end of the scan
@@ -500,8 +511,8 @@ def _channel_core(
     if width_start <= 0 or width_end <= 0:
         return None
     width_change = abs(width_end - width_start) / max(width_start, 1e-9)
-    if width_change > 0.40:
-        return None
+    if width_change > 0.55:
+        return None  # widened from 0.40 — noisy real channels drift more
 
     # Minimum amplitude — don't fire on micro-channels
     price_range = max(p["price"] for p in scan) - min(p["price"] for p in scan)
@@ -544,6 +555,15 @@ def _channel_core(
     )
 
     shape_pivots = sorted(top_pivots + bot_pivots, key=lambda p: p["index"])
+
+    # Align shape tail with the newest pivot in scan so recency-based sorts
+    # treat this channel on par with triangle/wedge detectors (which naturally
+    # include the freshest pivot). Without this, highs[-4:]/lows[-4:] can chop
+    # off the last swing and leave lastIdx 3-5 bars behind competing detectors.
+    newest_in_scan = max(scan, key=lambda p: p["index"])
+    if shape_pivots[-1]["index"] < newest_in_scan["index"]:
+        shape_pivots = sorted(shape_pivots + [newest_in_scan], key=lambda p: p["index"])
+
     trend_lines = [ln for ln in (upper, lower) if ln]
     for ln in trend_lines:
         ln["source"] = "pattern"
@@ -616,7 +636,8 @@ def _wedge_core(
     avg_bar = _avg_bar_length(candles, scan[0]["index"], scan[-1]["index"] + 1)
     if avg_bar <= 0:
         return None
-    flat_tol = max(avg_bar * 0.05, min_move * 0.05)
+    # Per-bar flat threshold only (see channel_core note on min_move inflation).
+    flat_tol = max(avg_bar * 0.05, 1e-9)
 
     # Meaningful convergence: the two slopes must differ substantially.
     # Plan appendix A suggests slope_ratio ∈ (0.3, 0.9); widened lower bound

@@ -1228,10 +1228,12 @@ def _pattern_selection_score(pattern_result, latest_index, trade_type=None):
         "bullish_vcp": 0.04,
         "bearish_vcp": 0.04,
         # Channels under LMW slope-regression are reliably identified structures
-        # (parallel + same-sign slope + width stability). Bump from the legacy
-        # 0.01 "generic" tier to 0.03, in line with triangles.
-        "ascending_channel": 0.03,
-        "descending_channel": 0.03,
+        # (parallel + same-sign slope + width stability). 0.05 edges them past
+        # triangle/wedge matches on borderline data where both patterns fire,
+        # since a proven parallel channel is more specific than the collapsing
+        # alternatives.
+        "ascending_channel": 0.05,
+        "descending_channel": 0.05,
     }
     specificity_bonus = specificity_bonus_map.get(pattern_type, 0.0)
 
