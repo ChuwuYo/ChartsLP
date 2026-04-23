@@ -61,7 +61,7 @@ def _fit_line(pivots: list[dict]) -> tuple[float, float, float]:
 # Head and Shoulders (5-extrema structure)
 # ---------------------------------------------------------------------------
 
-def detect_head_and_shoulders_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_head_and_shoulders_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     """LMW-strict head & shoulders top.
 
     Requires 5 extrema in order high-low-high-low-high where:
@@ -83,7 +83,7 @@ def detect_head_and_shoulders_lmw(pivots, candles, tolerance, min_move, breakout
     )
 
 
-def detect_inverse_head_and_shoulders_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_inverse_head_and_shoulders_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     """LMW-strict inverse head & shoulders bottom.
 
     5 extrema low-high-low-high-low, head (E3) strictly lower than both
@@ -408,17 +408,17 @@ def _triangle_core(
     }
 
 
-def detect_ascending_triangle_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_ascending_triangle_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _triangle_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                           variant="ascending")
 
 
-def detect_descending_triangle_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_descending_triangle_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _triangle_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                           variant="descending")
 
 
-def detect_symmetrical_triangle_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_symmetrical_triangle_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _triangle_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                           variant="symmetrical")
 
@@ -588,12 +588,12 @@ def _channel_core(
     }
 
 
-def detect_ascending_channel_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_ascending_channel_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _channel_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                          direction="ascending")
 
 
-def detect_descending_channel_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_descending_channel_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _channel_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                          direction="descending")
 
@@ -735,12 +735,12 @@ def _wedge_core(
     }
 
 
-def detect_rising_wedge_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_rising_wedge_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _wedge_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                        direction="rising")
 
 
-def detect_falling_wedge_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_falling_wedge_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _wedge_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                        direction="falling")
 
@@ -896,11 +896,11 @@ def _flag_core(
     }
 
 
-def detect_bull_flag_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_bull_flag_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _flag_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                       direction="bull")
 
 
-def detect_bear_flag_lmw(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio):
+def detect_bear_flag_lmw(pivots: list[dict], candles: list[dict], tolerance: float, min_move: float, breakout_buffer: float, volume_ratio: float) -> dict | None:
     return _flag_core(pivots, candles, tolerance, min_move, breakout_buffer, volume_ratio,
                       direction="bear")

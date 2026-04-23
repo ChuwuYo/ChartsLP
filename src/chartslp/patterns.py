@@ -7,17 +7,9 @@ from statistics import mean
 from chartslp.precision import smart_round_price
 from chartslp.trendlines import (
     build_auto_trendlines as _trendline_build_auto_trendlines,
-)
-from chartslp.trendlines import (
     build_pattern_boundary_lines as _trendline_build_pattern_boundary_lines,
-)
-from chartslp.trendlines import (
     build_trend_line as _trendline_build_trend_line,
-)
-from chartslp.trendlines import (
     count_valid_touches as _trendline_count_valid_touches,
-)
-from chartslp.trendlines import (
     project_price as _trendline_project_price,
 )
 
