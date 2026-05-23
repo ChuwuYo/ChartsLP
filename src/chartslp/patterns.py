@@ -7,9 +7,17 @@ from statistics import mean
 from chartslp.precision import smart_round_price
 from chartslp.trendlines import (
     build_auto_trendlines as _trendline_build_auto_trendlines,
+)
+from chartslp.trendlines import (
     build_pattern_boundary_lines as _trendline_build_pattern_boundary_lines,
+)
+from chartslp.trendlines import (
     build_trend_line as _trendline_build_trend_line,
+)
+from chartslp.trendlines import (
     count_valid_touches as _trendline_count_valid_touches,
+)
+from chartslp.trendlines import (
     project_price as _trendline_project_price,
 )
 
@@ -3477,8 +3485,6 @@ def detect_chart_patterns(
         sid = f"cluster-s{idx + 1}"
         if not any(abs(h.get("price", 0) - cl["center"]) < atr * 0.3 for h in hl):
             label = f"S{idx + 1}"
-            if cl["flipped"]:
-                label += " ↕"
             level = _build_horizontal_level(sid, label, "#22c55e", "dashed", cl["center"], cl["first_time"], end_time, candles=candles)
             level["touches"] = cl["touches"]
             level["flipped"] = cl["flipped"]
@@ -3488,8 +3494,6 @@ def detect_chart_patterns(
         rid = f"cluster-r{idx + 1}"
         if not any(abs(h.get("price", 0) - cl["center"]) < atr * 0.3 for h in hl):
             label = f"R{idx + 1}"
-            if cl["flipped"]:
-                label += " ↕"
             level = _build_horizontal_level(rid, label, "#ef4444", "dashed", cl["center"], cl["first_time"], end_time, candles=candles)
             level["touches"] = cl["touches"]
             level["flipped"] = cl["flipped"]

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1] - 2026-05-23
+
+### Changed
+
+- Drop the redundant `↕` suffix appended to flipped S/R cluster labels.
+  The `flipped` boolean field on the level remains the canonical signal;
+  downstream consumers should branch on that instead of parsing the label.
+
 ## [0.1.0] - 2026-04-20
 
 ### Added
