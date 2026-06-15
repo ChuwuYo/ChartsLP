@@ -1,6 +1,6 @@
 [project]
 name = "chartslp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Candlestick chart pattern and trendline detection engine."
 readme = "README.md"
 license = { text = "MIT" }

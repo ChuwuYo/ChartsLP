@@ -48,8 +48,10 @@ import numpy as np
 
 # ---------------------------------------------------------------------------
 # PIP budget per TF.  Short TFs get fewer pips (noise-dense, fewer meaningful
-# turning points); sparse daily/weekly get more.  Values chosen to mirror the
-# trendline pivot budget in trendlines.py:_MAX_PIVOTS_BY_INTERVAL.
+# turning points); sparse daily/weekly get more.  These run LARGER than
+# trendlines.py:_MAX_PIVOTS_BY_INTERVAL on purpose — PIP-PD seeds pattern
+# detection (wants richer structure), whereas that table caps O(N^2) trendline
+# scoring.  Same TF keys, deliberately different budgets.
 # ---------------------------------------------------------------------------
 
 _N_PIPS_BY_TF: dict[str, int] = {

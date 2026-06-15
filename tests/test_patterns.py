@@ -210,3 +210,72 @@ def test_auto_pattern_dedup_uses_time(
     assert set(trend_lines) == {"pattern-lower", "auto-lower"}
     assert trend_lines["pattern-lower"]["source"] == "pattern"
     assert trend_lines["auto-lower"]["source"] == "auto"
+
+
+# --------------------------------------------------------------------------- #
+# VCP breakout/breakdown reachability — regression for the dead-branch bug.    #
+# Previously the base-integrity gate scanned to the live bar AND a current-     #
+# price gate rejected any close past the level, so the breakout/breakdown       #
+# branches could never run: VCP only ever reported "forming".                   #
+# --------------------------------------------------------------------------- #
+def _vcp_candles(closes: list[float]) -> list[dict]:
+    return [
+        {
+            "index": i,
+            "time": 1_700_000_000 + i * 60,
+            "open": c,
+            "high": c + 2.0,
+            "low": c - 2.0,
+            "close": c,
+            "volume": 1_000.0,
+        }
+        for i, c in enumerate(closes)
+    ]
+
+
+def _vcp_pivots(spec: list[tuple[int, float, str]]) -> list[dict]:
+    return [
+        {"index": i, "time": 1_700_000_000 + i * 60, "price": p, "kind": k}
+        for i, p, k in spec
+    ]
+
+
+# A(high)110 → B(low)90 → C(high)110 → D(low)100: contracting, higher low.
+_BULLISH_VCP = [(5, 110.0, "high"), (10, 90.0, "low"), (15, 110.0, "high"), (20, 100.0, "low")]
+# Mirror — A(low)90 → B(high)110 → C(low)90 → D(high)100: contracting, lower high.
+_BEARISH_VCP = [(5, 90.0, "low"), (10, 110.0, "high"), (15, 90.0, "low"), (20, 100.0, "high")]
+
+
+def test_vcp_bullish_breakout_state_is_reachable() -> None:
+    # Live close (115) closes above resistance C (110) → must report "breakout".
+    candles = _vcp_candles([105.0] * 21 + [106.0] * 8 + [115.0])
+    result = pattern_engine._detect_vcp(
+        _vcp_pivots(_BULLISH_VCP), candles,
+        tolerance=5.0, min_move=1.0, breakout_buffer=1.0, volume_ratio=1.2,
+    )
+    assert result is not None
+    assert result["primaryPattern"]["type"] == "bullish_vcp"
+    assert result["primaryPattern"]["state"] == "breakout"
+
+
+def test_vcp_bullish_forming_when_price_below_resistance() -> None:
+    # Same base, live close (108) stays under resistance → still "forming".
+    candles = _vcp_candles([105.0] * 21 + [106.0] * 8 + [108.0])
+    result = pattern_engine._detect_vcp(
+        _vcp_pivots(_BULLISH_VCP), candles,
+        tolerance=5.0, min_move=1.0, breakout_buffer=1.0, volume_ratio=1.2,
+    )
+    assert result is not None
+    assert result["primaryPattern"]["state"] == "forming"
+
+
+def test_vcp_bearish_breakdown_state_is_reachable() -> None:
+    # Mirror: live close (85) closes below support C (90) → must report "breakdown".
+    candles = _vcp_candles([95.0] * 21 + [94.0] * 8 + [85.0])
+    result = pattern_engine._detect_vcp(
+        _vcp_pivots(_BEARISH_VCP), candles,
+        tolerance=5.0, min_move=1.0, breakout_buffer=1.0, volume_ratio=1.2,
+    )
+    assert result is not None
+    assert result["primaryPattern"]["type"] == "bearish_vcp"
+    assert result["primaryPattern"]["state"] == "breakdown"

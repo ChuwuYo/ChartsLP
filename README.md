@@ -88,7 +88,7 @@ See `examples/` for runnable snippets.
 
 ```bash
 uv sync --extra dev
-uv run pytest            # 26 tests
+uv run pytest            # 120 tests
 uv run ruff check src tests
 ```
 

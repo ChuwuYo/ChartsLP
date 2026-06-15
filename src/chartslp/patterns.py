@@ -2870,11 +2870,14 @@ def _detect_vcp(pivots, candles, tolerance, min_move, breakout_buffer, volume_ra
                 and contraction_cd < contraction_ab * 0.85
             ):
                 continue
-            if _is_level_breached(candles, c["price"], c["index"], "above"):
+            # Base integrity is judged only over the formation window (c→d).
+            # Scanning to the live bar here AND gating on `current_price > c`
+            # below made the breakout branch permanently unreachable — a fresh
+            # close above resistance IS the breakout we want to surface, not a
+            # reason to discard the base (matches the triangle/wedge detectors).
+            if _is_level_breached(candles[: d["index"] + 1], c["price"], c["index"], "above"):
                 continue
             if _is_level_breached(candles, d["price"], d["index"], "below"):
-                continue
-            if current_price > c["price"]:
                 continue
 
             contraction_ratio = contraction_cd / max(contraction_ab, 1e-9)
@@ -2933,11 +2936,12 @@ def _detect_vcp(pivots, candles, tolerance, min_move, breakout_buffer, volume_ra
                 and contraction_cd < contraction_ab * 0.85
             ):
                 continue
-            if _is_level_breached(candles, c["price"], c["index"], "below"):
+            # Base integrity judged only over the formation window (c→d); see the
+            # bullish branch above. Gating on the live bar made the breakdown
+            # branch below unreachable.
+            if _is_level_breached(candles[: d["index"] + 1], c["price"], c["index"], "below"):
                 continue
             if _is_level_breached(candles, d["price"], d["index"], "above"):
-                continue
-            if current_price < c["price"]:
                 continue
 
             contraction_ratio = contraction_cd / max(contraction_ab, 1e-9)
@@ -3268,6 +3272,7 @@ def detect_chart_patterns(
             "generatedFrom": "ohlcv",
             "timeframe": timeframe,
             "tradeType": trade_type,
+            "summary": PATTERN_LABELS["no_clear_pattern"],
             "primaryPattern": {
                 "type": "no_clear_pattern",
                 "label": PATTERN_LABELS["no_clear_pattern"],
@@ -3276,12 +3281,14 @@ def detect_chart_patterns(
                 "confidence": 0.0,
                 "description": "Not enough candles to detect a stable chart structure.",
             },
+            "shapes": [],
             "swingPoints": [],
             "trendLines": [],
             "horizontalLevels": [],
             "markers": [],
             "levels": {"support": None, "resistance": None},
             "stats": {"pivotCount": 0, "atr": 0.0, "volumeRatio": 1.0},
+            "allCandidates": [],
         }
 
     atr, tolerance, min_move, breakout_buffer = _calculate_pattern_tolerances(candles, trade_type)

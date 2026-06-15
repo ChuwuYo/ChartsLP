@@ -78,20 +78,25 @@ class PatternStats(TypedDict):
 
 class PatternResult(TypedDict):
     version: int
+    generatedFrom: str
     timeframe: str
     tradeType: str
+    summary: str
     primaryPattern: PrimaryPattern
     shapes: list[PatternShape]
     swingPoints: list[Pivot]
     trendLines: list[TrendLine]
     horizontalLevels: list[HorizontalLevel]
-    levels: dict[str, float]
+    markers: list[dict]
+    levels: dict[str, float | None]
     stats: PatternStats
     allCandidates: NotRequired[list[dict]]
     themeColor: NotRequired[str]
 
 
 TradeType = Literal["swing", "scalp"]
+# Casing is significant: "1m" = 1 minute, "1M" = 1 month, "1w" = 1 week.
+# Keep these lowercase-w to match the data layer (market_data emits "1w"/"1M").
 Timeframe = Literal[
-    "1m", "5m", "15m", "30m", "1h", "2h", "4h", "1d", "1W", "1M"
+    "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "1d", "1w", "1M"
 ]
