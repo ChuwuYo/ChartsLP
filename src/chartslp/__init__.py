@@ -1,6 +1,7 @@
 """chartslp — candlestick pattern and trendline detection engine."""
 
 from chartslp._version import __version__
+from chartslp.ict_structures import detect_ict_structures, format_ict_engine_context
 from chartslp.patterns import (
     PATTERN_LABELS,
     detect_chart_patterns,
@@ -18,6 +19,8 @@ __all__ = [
     "__version__",
     "PATTERN_LABELS",
     "detect_chart_patterns",
+    "detect_ict_structures",
+    "format_ict_engine_context",
     "format_pattern_engine_context",
     "build_auto_trendlines",
     "build_pattern_boundary_lines",

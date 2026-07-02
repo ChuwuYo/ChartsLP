@@ -593,7 +593,7 @@ def _find_recent_pattern_pivots(primary_type, pivots, tolerance, min_move):
     if primary_type == "double_top":
         candidates = []
         min_span_bars = 8
-        for offset in range(len(pivots) - 2, 1, -1):
+        for offset in range(len(pivots) - 1, 1, -1):
             seq = pivots[offset - 2:offset + 1]
             if [point["kind"] for point in seq] != ["high", "low", "high"]:
                 continue
@@ -614,7 +614,7 @@ def _find_recent_pattern_pivots(primary_type, pivots, tolerance, min_move):
 
         if not candidates:
             # Fallback without span constraint if market is very compressed.
-            for offset in range(len(pivots) - 2, 1, -1):
+            for offset in range(len(pivots) - 1, 1, -1):
                 seq = pivots[offset - 2:offset + 1]
                 if [point["kind"] for point in seq] != ["high", "low", "high"]:
                     continue
@@ -639,7 +639,7 @@ def _find_recent_pattern_pivots(primary_type, pivots, tolerance, min_move):
     if primary_type == "double_bottom":
         candidates = []
         min_span_bars = 8
-        for offset in range(len(pivots) - 2, 1, -1):
+        for offset in range(len(pivots) - 1, 1, -1):
             seq = pivots[offset - 2:offset + 1]
             if [point["kind"] for point in seq] != ["low", "high", "low"]:
                 continue
@@ -659,7 +659,7 @@ def _find_recent_pattern_pivots(primary_type, pivots, tolerance, min_move):
             candidates.append((score, low_b["index"], seq))
 
         if not candidates:
-            for offset in range(len(pivots) - 2, 1, -1):
+            for offset in range(len(pivots) - 1, 1, -1):
                 seq = pivots[offset - 2:offset + 1]
                 if [point["kind"] for point in seq] != ["low", "high", "low"]:
                     continue
@@ -1384,7 +1384,7 @@ def _detect_double_top(pivots, candles, tolerance, min_move, breakout_buffer, vo
     latest_index = candles[-1]["index"] if candles else 0
     recent_floor = max(0, latest_index - 180)
     atr_local = _calculate_atr(candles)
-    for offset in range(len(pivots) - 2, 1, -1):
+    for offset in range(len(pivots) - 1, 1, -1):
         sequence = pivots[offset - 2:offset + 1]
         if [point["kind"] for point in sequence] != ["high", "low", "high"]:
             continue
@@ -1435,7 +1435,7 @@ def _detect_double_top(pivots, candles, tolerance, min_move, breakout_buffer, vo
         candidates.append((score, high_b["index"], sequence))
 
     if not candidates:
-        for offset in range(len(pivots) - 2, 1, -1):
+        for offset in range(len(pivots) - 1, 1, -1):
             sequence = pivots[offset - 2:offset + 1]
             if [point["kind"] for point in sequence] != ["high", "low", "high"]:
                 continue
@@ -1576,7 +1576,7 @@ def _detect_double_bottom(pivots, candles, tolerance, min_move, breakout_buffer,
     latest_index = candles[-1]["index"] if candles else 0
     recent_floor = max(0, latest_index - 180)
     atr_local = _calculate_atr(candles)
-    for offset in range(len(pivots) - 2, 1, -1):
+    for offset in range(len(pivots) - 1, 1, -1):
         sequence = pivots[offset - 2:offset + 1]
         if [point["kind"] for point in sequence] != ["low", "high", "low"]:
             continue
@@ -1627,7 +1627,7 @@ def _detect_double_bottom(pivots, candles, tolerance, min_move, breakout_buffer,
         candidates.append((score, low_b["index"], sequence))
 
     if not candidates:
-        for offset in range(len(pivots) - 2, 1, -1):
+        for offset in range(len(pivots) - 1, 1, -1):
             sequence = pivots[offset - 2:offset + 1]
             if [point["kind"] for point in sequence] != ["low", "high", "low"]:
                 continue
@@ -3457,7 +3457,11 @@ def detect_chart_patterns(
     price_threshold = max(atr * 0.3, 1e-9)
     # Time threshold: ~1 bar in seconds. Use candle interval if known.
     if len(candles) >= 2:
-        bar_seconds = max(candles[1]["time"] - candles[0]["time"], 1)
+        # Median inter-bar gap — robust to a non-representative leading gap
+        # (initial partial/aggregated bar, weekend boundary, or a data gap at
+        # the series start) that a single candles[1]-candles[0] would inherit.
+        gaps = sorted(candles[i + 1]["time"] - candles[i]["time"] for i in range(len(candles) - 1))
+        bar_seconds = max(gaps[len(gaps) // 2], 1)
     else:
         bar_seconds = 1
     time_threshold = bar_seconds * 2  # 2 bars of tolerance
@@ -3590,6 +3594,7 @@ def detect_chart_patterns(
             "label": cp.get("label", PATTERN_LABELS.get(ctype, ctype)),
             "bias": cp.get("bias", "neutral"),
             "confidence": cp.get("confidence", 0.0),
+            "state": cp.get("state", "monitor"),
             "score": round(score, 4),
             "lastIndex": last_idx,
             "shapes": cand_shapes,

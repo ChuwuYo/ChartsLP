@@ -46,7 +46,11 @@ _BASELINE_FLOOR: dict[str, int] = {
                                       # Acceptable ambiguity (flat-top = double-top).
     "descending_triangle":        3,  # Step 7 regression: 2/5 now lose to double_bottom retest
     "symmetrical_triangle":       3,  # LMW fires; 2/5 lose to v_reversal on noisy seeds
-    "rising_wedge":               5,  # locked (P1 LMW)
+    "rising_wedge":               4,  # 2026-07: was 5. The double-top/bottom
+                                      # off-by-one fix (audit #1/#2) now surfaces
+                                      # the freshest 2-high window; 1/5 wedge seeds
+                                      # legitimately read as double_top (two highs
+                                      # + a dip). Defensible ambiguity, re-blessed.
     "falling_wedge":              4,  # LMW fires; 1/5 loses to v_reversal
     "bull_flag":                  5,  # locked (Step 6 LMW flag)
     "bear_flag":                  5,  # locked (Step 6 LMW flag, base conf bumped to 0.55)

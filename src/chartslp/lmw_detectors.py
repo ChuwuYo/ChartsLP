@@ -402,8 +402,8 @@ def _triangle_core(
         ],
         "markers": [],
         "levels": {
-            "support": smart_round_price(bot_projected),
-            "resistance": smart_round_price(top_projected),
+            "support": smart_round_price(min(top_projected, bot_projected)),
+            "resistance": smart_round_price(max(top_projected, bot_projected)),
         },
     }
 
@@ -582,8 +582,8 @@ def _channel_core(
         "horizontalLevels": [],
         "markers": [],
         "levels": {
-            "support": smart_round_price(bot_projected),
-            "resistance": smart_round_price(top_projected),
+            "support": smart_round_price(min(top_projected, bot_projected)),
+            "resistance": smart_round_price(max(top_projected, bot_projected)),
         },
     }
 
@@ -729,8 +729,8 @@ def _wedge_core(
         "horizontalLevels": [],
         "markers": [],
         "levels": {
-            "support": smart_round_price(bot_projected),
-            "resistance": smart_round_price(top_projected),
+            "support": smart_round_price(min(top_projected, bot_projected)),
+            "resistance": smart_round_price(max(top_projected, bot_projected)),
         },
     }
 

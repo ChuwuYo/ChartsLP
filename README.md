@@ -2,7 +2,7 @@
 
 Candlestick chart pattern and trendline detection for Python.
 
-29 built-in pattern detectors. ATR-scaled tolerances that hold up on micro-cap
+28 built-in pattern detectors. ATR-scaled tolerances that hold up on micro-cap
 prices down to 1e-9. Zero framework dependencies — just `numpy`. Works on
 OHLCV dict input; no DataFrames required.
 
@@ -17,7 +17,7 @@ pip install -e /path/to/chartslp
 From a git URL:
 
 ```bash
-pip install "chartslp @ git+https://github.com/YOUR_USER/chartslp.git@v0.1.0"
+pip install "chartslp @ git+https://github.com/ChuwuYo/ChartsLP.git@v0.1.2"
 ```
 
 ## Quick start
@@ -41,7 +41,7 @@ for line in result["trendLines"]:
 
 ## Supported patterns
 
-29 pattern types, including:
+28 pattern types, including:
 
 - Triangles: ascending, descending, symmetrical, broadening
 - Wedges: rising, falling
@@ -88,7 +88,7 @@ See `examples/` for runnable snippets.
 
 ```bash
 uv sync --extra dev
-uv run pytest            # 120 tests
+uv run pytest            # 113 tests
 uv run ruff check src tests
 ```
 

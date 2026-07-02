@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.2] - 2026-06-15
+
+### Fixed
+
+- VCP (volatility contraction pattern) detection: the bullish breakout and
+  bearish breakdown branches were unreachable. Base integrity is now judged
+  only over the formation window (c→d) instead of scanning to the live bar,
+  and the `current_price` gate that suppressed a fresh breakout/breakdown was
+  removed — a close beyond the base now surfaces as the breakout, matching the
+  triangle/wedge detectors. The insufficient-candles early return now emits the
+  full result shape (`summary`, `shapes`, `allCandidates`).
+
+### Changed
+
+- `Timeframe` contract: added `"3m"` and normalized `"1W"` → `"1w"` to match
+  the data layer (which emits `"1w"` / `"1M"`).
+- `PatternResult` gained `generatedFrom`, `summary`, and `markers`; `levels`
+  is now `dict[str, float | None]`.
+
 ## [0.1.1] - 2026-05-23
 
 ### Changed
