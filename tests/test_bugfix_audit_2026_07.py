@@ -9,7 +9,6 @@ import pytest
 
 from chartslp import patterns
 
-
 # --- Bug #1 / #2: double-top / double-bottom off-by-one drops the freshest
 # window (offset upper bound was len(pivots)-2, so the last pivot could never be
 # the second peak/trough; with exactly 3 pivots the loop was empty). The same
